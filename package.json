@@ -1,0 +1,28 @@
+{
+  "name": "cv-check",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "cv-check": "./dist/cli.js",
+    "cv-check-web": "./dist/server.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "cv-check": "node dist/cli.js",
+    "web": "tsc && node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/**/*.test.ts"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "dependencies": {
+    "@cursor/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}

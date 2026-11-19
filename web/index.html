@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CV check</title>
+  <style>
+    :root {
+      --bg: #f6f6f4;
+      --card: #ffffff;
+      --text: #1d1d1f;
+      --muted: #6b6b70;
+      --border: #e2e2de;
+      --accent: #2f5bea;
+      --apply: #1f8a4c;
+      --maybe: #b7791f;
+      --skip: #c0392b;
+      --code: #f0f0ec;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #161618;
+        --card: #202023;
+        --text: #ececee;
+        --muted: #9a9aa2;
+        --border: #34343a;
+        --accent: #7193ff;
+        --apply: #3fbf75;
+        --maybe: #e0a63a;
+        --skip: #ee6a5c;
+        --code: #2a2a2f;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+    main { max-width: 920px; margin: 0 auto; padding: 32px 20px 80px; }
+    h1 { font-size: 22px; margin: 0 0 4px; }
+    .sub { color: var(--muted); margin: 0 0 20px; font-size: 13px; }
+    .sub code { font-size: 12px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+    }
+    form .row { display: flex; gap: 10px; }
+    input[type="url"], input[type="text"], textarea {
+      width: 100%;
+      font: inherit;
+      color: inherit;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    input[type="url"] { font-size: 16px; }
+    textarea { min-height: 140px; resize: vertical; font-size: 13px; }
+    input:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+    button {
+      font: inherit;
+      font-weight: 600;
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 18px;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    button.secondary { background: transparent; color: var(--accent); border: 1px solid var(--border); }
+    button:disabled { opacity: 0.5; cursor: default; }
+    details.options { margin-top: 12px; }
+    details.options summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+    .options-grid { display: grid; gap: 12px; margin-top: 12px; }
+    label.field { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+    label.check { display: flex; gap: 8px; align-items: center; font-size: 13px; }
+    .status-line { display: flex; align-items: center; gap: 10px; }
+    .spinner {
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 2px solid var(--border); border-top-color: var(--accent);
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .elapsed { color: var(--muted); font-size: 13px; margin-left: auto; font-variant-numeric: tabular-nums; }
+    details.log { margin-top: 10px; }
+    details.log summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+    pre.log-lines {
+      margin: 8px 0 0; padding: 10px 12px; max-height: 240px; overflow: auto;
+      background: var(--code); border-radius: 8px; font-size: 12px; white-space: pre-wrap;
+    }
+    .banner { border-left: 4px solid var(--accent); }
+    .banner.error { border-left-color: var(--skip); }
+    .banner.warn { border-left-color: var(--maybe); }
+    .banner h2 { font-size: 16px; margin: 0 0 6px; }
+    .banner p { margin: 4px 0; }
+    .approval-item { border-top: 1px solid var(--border); padding: 10px 0; display: flex; gap: 12px; }
+    .approval-item:first-of-type { border-top: 0; }
+    .approval-item .fact { font-weight: 600; }
+    .approval-item .reason { color: var(--muted); font-size: 13px; }
+    .verdict { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .badge {
+      font-weight: 700; font-size: 14px; padding: 4px 12px; border-radius: 999px; color: #fff;
+    }
+    .badge.Apply { background: var(--apply); }
+    .badge.Maybe { background: var(--maybe); }
+    .badge.Skip { background: var(--skip); }
+    .verdict .title { font-size: 17px; font-weight: 600; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .actions a { text-decoration: none; }
+    ul.notes { margin: 10px 0 0; padding-left: 18px; color: var(--muted); font-size: 13px; }
+    .report h1 { font-size: 20px; margin: 0 0 12px; }
+    .report h2 { font-size: 16px; margin: 22px 0 8px; padding-bottom: 4px; border-bottom: 1px solid var(--border); }
+    .report h3 { font-size: 15px; margin: 16px 0 6px; }
+    .report p { margin: 6px 0; }
+    .report ul, .report ol { margin: 6px 0; padding-left: 22px; }
+    .report li { margin: 2px 0; }
+    .report code { background: var(--code); padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+    .report table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 14px; }
+    .report th, .report td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; vertical-align: top; }
+    .report th { background: var(--code); }
+    .report a { color: var(--accent); }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>CV check</h1>
+    <p class="sub" id="env">Checking setup…</p>
+
+    <form class="card" id="form">
+      <div class="row">
+        <input type="url" id="url" placeholder="Paste the job posting link" required autofocus />
+        <button type="submit" id="submit">Check</button>
+      </div>
+      <details class="options" id="options">
+        <summary>Options</summary>
+        <div class="options-grid">
+          <label class="field">
+            Model
+            <input type="text" id="model" list="models" />
+            <datalist id="models"></datalist>
+          </label>
+          <label class="check">
+            <input type="checkbox" id="force" />
+            Run even if this job is already in the tracker (adds another row)
+          </label>
+          <label class="check">
+            <input type="checkbox" id="force-cv" />
+            Always write a tailored CV, even on Skip, if it is sparse, or if it runs onto a second page
+          </label>
+          <label class="field">
+            Job description (only if the page is behind a login; the link is still required)
+            <textarea id="description" placeholder="Paste the posting text here"></textarea>
+          </label>
+        </div>
+      </details>
+    </form>
+
+    <section class="card" id="progress" hidden>
+      <div class="status-line">
+        <div class="spinner" id="spinner"></div>
+        <strong id="phase">Starting…</strong>
+        <span class="elapsed" id="elapsed"></span>
+      </div>
+      <details class="log">
+        <summary>Details</summary>
+        <pre class="log-lines" id="log"></pre>
+      </details>
+    </section>
+
+    <section class="card banner warn" id="approval" hidden>
+      <h2>Approve removals from the tailored CV</h2>
+      <p>To keep the CV on one page, the model wants to drop these facts. Tick only the ones you are fine losing. Unticked facts stay.</p>
+      <div id="approval-items"></div>
+      <div class="actions"><button type="button" id="approval-send">Send decisions</button></div>
+    </section>
+
+    <section class="card banner" id="message" hidden></section>
+
+    <section class="card" id="result" hidden>
+      <div class="verdict">
+        <span class="badge" id="badge"></span>
+        <span class="title" id="result-title"></span>
+      </div>
+      <div class="actions" id="result-actions"></div>
+      <ul class="notes" id="notes"></ul>
+    </section>
+
+    <section class="card report" id="report" hidden></section>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const state = { source: null, runId: null, approvalId: null, started: 0, timer: null, canReveal: false };
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function inline(text) {
+      return String(text)
+        .split(/(`[^`]*`)/)
+        .map((part) => {
+          if (part.length > 1 && part.startsWith("`") && part.endsWith("`")) {
+            return `<code>${escapeHtml(part.slice(1, -1))}</code>`;
+          }
+          return escapeHtml(part)
+            .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+            .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+            .replace(/(^|[^*])\*([^*\s][^*]*)\*/g, "$1<em>$2</em>")
+            .replace(/(^|\W)_([^_\s][^_]*)_(?=\W|$)/g, "$1<em>$2</em>");
+        })
+        .join("");
+    }
+
+    function splitRow(line) {
+      return line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((cell) => cell.trim());
+    }
+
+    function renderMarkdown(markdown) {
+      const lines = markdown.replace(/\r\n/g, "\n").split("\n");
+      const out = [];
+      let paragraph = [];
+      const lists = [];
+
+      const flushParagraph = () => {
+        if (paragraph.length) out.push(`<p>${paragraph.map(inline).join("<br>")}</p>`);
+        paragraph = [];
+      };
+      const closeLists = (depth = 0) => {
+        while (lists.length > depth) out.push(`</li></${lists.pop().tag}>`);
+      };
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const trimmed = line.trim();
+
+        if (!trimmed) {
+          flushParagraph();
+          closeLists();
+          continue;
+        }
+
+        const heading = trimmed.match(/^(#{1,6})\s+(.*)$/);
+        if (heading) {
+          flushParagraph();
+          closeLists();
+          const level = heading[1].length;
+          out.push(`<h${level}>${inline(heading[2])}</h${level}>`);
+          continue;
+        }
+
+        if (trimmed.startsWith("|")) {
+          flushParagraph();
+          closeLists();
+          const rows = [];
+          while (i < lines.length && lines[i].trim().startsWith("|")) {
+            rows.push(lines[i]);
+            i++;
+          }
+          i--;
+          const body = rows.filter((row) => !/^\s*\|?\s*:?-{2,}/.test(row));
+          const [head, ...rest] = body.map(splitRow);
+          const hasHeader = rows.length > 1 && /^\s*\|?\s*:?-{2,}/.test(rows[1]);
+          let html = "<table>";
+          if (hasHeader && head) {
+            html += `<thead><tr>${head.map((c) => `<th>${inline(c)}</th>`).join("")}</tr></thead>`;
+            html += `<tbody>${rest.map((r) => `<tr>${r.map((c) => `<td>${inline(c)}</td>`).join("")}</tr>`).join("")}</tbody>`;
+          } else {
+            html += `<tbody>${body.map(splitRow).map((r) => `<tr>${r.map((c) => `<td>${inline(c)}</td>`).join("")}</tr>`).join("")}</tbody>`;
+          }
+          out.push(`${html}</table>`);
+          continue;
+        }
+
+        const item = line.match(/^(\s*)([-*+]|\d+[.)])\s+(.*)$/);
+        if (item) {
+          flushParagraph();
+          const depth = Math.floor(item[1].replace(/\t/g, "  ").length / 2) + 1;
+          const tag = /\d/.test(item[2]) ? "ol" : "ul";
+          if (depth > lists.length) {
+            while (lists.length < depth) {
+              out.push(`<${tag}><li>`);
+              lists.push({ tag });
+            }
+          } else {
+            closeLists(depth);
+            out.push("</li><li>");
+          }
+          out.push(inline(item[3]));
+          continue;
+        }
+
+        if (lists.length) {
+          out.push(" " + inline(trimmed));
+          continue;
+        }
+        paragraph.push(trimmed);
+      }
+      flushParagraph();
+      closeLists();
+      return out.join("\n");
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, {
+        ...options,
+        headers: options.body ? { "content-type": "application/json" } : undefined,
+      });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const error = new Error(body.error || `Request failed (${response.status})`);
+        error.body = body;
+        throw error;
+      }
+      return body;
+    }
+
+    function describe(message) {
+      const tool = message.match(/^\[tool\] (\w+): (\w+)/);
+      if (tool) {
+        const names = {
+          fetch_job_page: "Reading the job posting",
+          request_deletion_approval: "Waiting for your approval",
+          submit_report: "Writing the match report",
+        };
+        return names[tool[1]] || "Comparing your CV with the posting";
+      }
+      if (message.startsWith("CV:")) return "Loading your CV";
+      if (message.startsWith("agent ") || message.startsWith("run ")) return "Comparing your CV with the posting";
+      if (/too long for one page/i.test(message)) return "Fitting the tailored CV on one page";
+      return null;
+    }
+
+    function resetView() {
+      $("log").textContent = "";
+      $("phase").textContent = "Starting…";
+      $("approval").hidden = true;
+      $("message").hidden = true;
+      $("result").hidden = true;
+      $("report").hidden = true;
+      $("notes").innerHTML = "";
+      $("result-actions").innerHTML = "";
+    }
+
+    function setBusy(busy) {
+      $("submit").disabled = busy;
+      $("url").disabled = busy;
+      $("progress").hidden = false;
+      $("spinner").hidden = !busy;
+      clearInterval(state.timer);
+      if (busy) {
+        state.started = state.started || Date.now();
+        const tick = () => {
+          const seconds = Math.round((Date.now() - state.started) / 1000);
+          $("elapsed").textContent = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+        };
+        tick();
+        state.timer = setInterval(tick, 1000);
+      }
+    }
+
+    function showMessage(kind, title, paragraphs, actions = []) {
+      const box = $("message");
+      box.className = `card banner ${kind}`;
+      box.innerHTML = `<h2>${escapeHtml(title)}</h2>${paragraphs.map((p) => `<p>${escapeHtml(p)}</p>`).join("")}`;
+      if (actions.length) {
+        const row = document.createElement("div");
+        row.className = "actions";
+        for (const action of actions) row.append(action);
+        box.append(row);
+      }
+      box.hidden = false;
+    }
+
+    function button(label, onClick, secondary = false) {
+      const el = document.createElement("button");
+      el.type = "button";
+      el.textContent = label;
+      if (secondary) el.className = "secondary";
+      el.addEventListener("click", onClick);
+      return el;
+    }
+
+    function showApproval(event) {
+      state.approvalId = event.id;
+      const container = $("approval-items");
+      container.innerHTML = "";
+      event.items.forEach((item, index) => {
+        const row = document.createElement("label");
+        row.className = "approval-item";
+        row.innerHTML = `<input type="checkbox" data-index="${index}" />
+          <div><div class="fact">${escapeHtml(item.fact)}</div><div class="reason">${escapeHtml(item.reason)}</div></div>`;
+        container.append(row);
+      });
+      $("approval-send").disabled = false;
+      $("approval").hidden = false;
+      $("phase").textContent = "Waiting for your approval";
+      $("approval").scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    function showOutcome(runId, outcome) {
+      if (outcome.kind === "duplicate") {
+        const d = outcome.duplicate;
+        showMessage("warn", "Already in your tracker", [
+          `${d.company || "Unknown company"} — ${d.title || "unknown role"}`,
+          d.recommendation ? `Earlier recommendation: ${d.recommendation}` : "",
+          d.analyzedOn ? `Analyzed on: ${d.analyzedOn}` : "",
+          d.report ? `Report: ${d.report}` : "",
+        ].filter(Boolean), [button("Run anyway", () => { $("force").checked = true; submit(); })]);
+        return;
+      }
+
+      if (outcome.kind === "blocked") {
+        $("options").open = true;
+        showMessage("error", "Couldn't read the job page", [
+          outcome.reason,
+          "Open the posting yourself, copy the description into the Job description box under Options, and press Check again.",
+        ]);
+        $("description").focus();
+        return;
+      }
+
+      const badgeClass = outcome.recommendation.split(" ")[0];
+      $("badge").className = `badge ${badgeClass}`;
+      $("badge").textContent = outcome.recommendation === "Skip" ? "Skip (long shot)" : outcome.recommendation;
+      $("result-title").textContent = `${outcome.role} @ ${outcome.company}`;
+
+      const actions = $("result-actions");
+      if (outcome.pdfPath) {
+        const link = document.createElement("a");
+        link.href = `/api/runs/${runId}/pdf`;
+        link.target = "_blank";
+        link.innerHTML = "<button type=\"button\">Open tailored CV (PDF)</button>";
+        actions.append(link);
+      }
+      if (state.canReveal && (outcome.pdfPath || outcome.reportPath)) {
+        actions.append(button("Show in Finder", () => api(`/api/runs/${runId}/reveal`, { method: "POST", body: "{}" }), true));
+      }
+      $("notes").innerHTML = outcome.notes.map((note) => `<li>${escapeHtml(note)}</li>`).join("");
+      $("result").hidden = false;
+
+      $("report").innerHTML = renderMarkdown(outcome.markdown);
+      $("report").hidden = false;
+    }
+
+    function follow(runId) {
+      if (state.source) state.source.close();
+      state.runId = runId;
+      state.started = Number(runId) || Date.now();
+      localStorage.setItem("cv-check:lastRun", runId);
+      const source = new EventSource(`/api/runs/${runId}/events`);
+      state.source = source;
+      let done = false;
+
+      source.onopen = () => {
+        resetView();
+        setBusy(true);
+      };
+      source.onmessage = (message) => {
+        const event = JSON.parse(message.data);
+        if (event.type === "log") {
+          $("log").textContent += `${event.message}\n`;
+          const phase = describe(event.message);
+          if (phase) $("phase").textContent = phase;
+        } else if (event.type === "approval") {
+          showApproval(event);
+        } else if (event.type === "approval-resolved") {
+          if (state.approvalId === event.id) $("approval").hidden = true;
+          $("phase").textContent = "Comparing your CV with the posting";
+        } else if (event.type === "outcome" || event.type === "error") {
+          done = true;
+          source.close();
+          setBusy(false);
+          $("phase").textContent =
+            event.type === "error" ? "Failed" : event.outcome.kind === "done" ? "Done" : "Stopped";
+          if (event.type === "error") showMessage("error", "The check failed", [event.message]);
+          else showOutcome(runId, event.outcome);
+          state.started = 0;
+          refreshStatus();
+        }
+      };
+      source.onerror = () => {
+        if (done) return;
+        if (source.readyState === EventSource.CLOSED) {
+          setBusy(false);
+          showMessage("error", "Lost the connection to the server", ["Is `npm run web` still running? Reload the page once it is back."]);
+        }
+      };
+    }
+
+    async function submit() {
+      const input = {
+        url: $("url").value.trim(),
+        model: $("model").value.trim(),
+        force: $("force").checked,
+        forceCv: $("force-cv").checked,
+        description: $("description").value,
+      };
+      if (!input.url) return;
+      resetView();
+      state.started = Date.now();
+      try {
+        const { runId } = await api("/api/runs", { method: "POST", body: JSON.stringify(input) });
+        $("force").checked = false;
+        follow(runId);
+      } catch (error) {
+        if (error.body?.runId) {
+          follow(error.body.runId);
+          return;
+        }
+        showMessage("error", "Couldn't start the check", [error.message]);
+      }
+    }
+
+    $("form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      submit();
+    });
+
+    $("approval-send").addEventListener("click", async () => {
+      const approved = [...$("approval-items").querySelectorAll("input[type=checkbox]")].map((box) => box.checked);
+      $("approval-send").disabled = true;
+      try {
+        await api(`/api/runs/${state.runId}/approvals`, {
+          method: "POST",
+          body: JSON.stringify({ id: state.approvalId, approved }),
+        });
+      } catch (error) {
+        $("approval-send").disabled = false;
+        showMessage("error", "Couldn't send your decisions", [error.message]);
+      }
+    });
+
+    async function refreshStatus() {
+      try {
+        const status = await api("/api/status");
+        state.canReveal = status.canReveal;
+        const parts = [];
+        parts.push(status.cv ? `CV: <code>${escapeHtml(status.cv)}</code>` : `<strong>${escapeHtml(status.cvError)}</strong>`);
+        parts.push(`Tracker: <code>${escapeHtml(status.tracker.split("/").pop())}</code>`);
+        if (!status.apiKey) parts.push("<strong>CURSOR_API_KEY is not set</strong> — add it to <code>.env</code> and restart");
+        $("env").innerHTML = parts.join(" · ");
+        if (!$("model").value) $("model").value = status.defaultModel;
+        return status;
+      } catch {
+        $("env").textContent = "Can't reach the cv-check server.";
+        return null;
+      }
+    }
+
+    async function loadModels() {
+      try {
+        const { models } = await api("/api/models");
+        $("models").innerHTML = models
+          .map((m) => `<option value="${escapeHtml(m.id)}">${escapeHtml(m.name)}</option>`)
+          .join("");
+      } catch {
+        // free-text model id still works
+      }
+    }
+
+    (async () => {
+      const status = await refreshStatus();
+      loadModels();
+      const lastRun = status?.activeRun || localStorage.getItem("cv-check:lastRun");
+      if (!lastRun) return;
+      try {
+        await api(`/api/runs/${lastRun}`);
+        follow(lastRun);
+      } catch {
+        localStorage.removeItem("cv-check:lastRun");
+      }
+    })();
+  </script>
+</body>
+</html>

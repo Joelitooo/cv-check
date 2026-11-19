@@ -1,0 +1,17 @@
+services:
+  cv-check:
+    build: .
+    image: cv-check
+    container_name: cv-check
+    restart: unless-stopped
+    ports:
+      # The server rejects requests whose Host is not localhost:4321, so keep both ports equal.
+      - "127.0.0.1:4321:4321"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      TZ: Europe/Warsaw
+    volumes:
+      # Same path as on the Mac, so the CV, tracker, and report paths in src/ resolve unchanged.
+      - ${HOME}/Documents:/Users/joelito/Documents

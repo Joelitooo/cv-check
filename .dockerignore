@@ -1,0 +1,7 @@
+.git
+.env
+.runs
+dist
+node_modules
+tmp
+*.tsbuildinfo
